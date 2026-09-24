@@ -1,0 +1,300 @@
+195	8b
+13	4b
+1750	11b
+1855	11b
+2700	12b
+2	2b
+376	9b
+888	9b
+8	4b
+212	8b
+4500	13b
+81	7b
+20,000	15b
+55	6b
+
+
+IPv4 Subnetting:
+
+TASK 1: Design a network for Accenture.com with 1750 agents, team leads, and project managers. Using the 10.0.0.0/8 address space
+
+C onvert: 	1750 = 11 bits
+S ubtract:	/32 - 11 = /21 
+	
+	-10.0.0.0/21
+
+Network address is the 21, host address is the 11, 32 is the total 
+
+Ipasok i sa octet: /21 (3rd, 8i)
+	-10.0.8.0
+
+Network ni Accenture.com: 10.0.0.0 /21
+	 Firest Valid IP: 10.0.0.1        +1
+           Last Valid IP: 10.0.7.254
+	       Broadcast: 10.0.7.255      -1
+
+TASK 2: Design a network for cognizant.com with 600 agents, team leads, and project managers. Using the 10.0.0.0/8 address space
+
+C	 10b
+S	/32 - 10b = /22
+		
+	= 10.0.0.0/22
+
+I	3rd, 4i
+	- 10.0.4.0
+
+Network:	 10.0.0.0/22
+
+	First Valid (+1 NET)  : 
+	 Last Valid (-1 Broad):
+	  Broadcast (-1 NOT)  :
+Not		              : 10.0.4.0/?
+
+Not
+
+
+TASK 3: Design a network for cognizant.com with 37 pcs. Using the 10.50.128.128/25 address space
+C	 6b
+S	/32 - 6b = /26
+		
+	= 10.50.128.128/26
+
+I	4th, 64i
+	- 10.50.128.192
+
+Network:	 		10.50.128.128 /26
+	First Valid (+1 NET)  : 10.50.128.129
+	 Last Valid (-1 Broad): 10.50.128.190 
+	  Broadcast (-1 NOT)  : 10.50.128.191
+Not			      : 10.50.128.192 /?
+
+Subnets: 1: 10.50.128.128 /26
+	 2: 10.50.128.192 /26
+	 3: 10.50.129.0 /26
+
+TASK 4: Design a network for cognizant.com with 100 pcs. Using the 192.168.192.0/19 address space
+C	 7b
+S	/32 - 7b = /25
+		
+	= 192.168.192.0/25
+
+I	4th oct, 128i
+	= 192.168.192.128/25 
+
+Network			      : 192.168.192.0/25	 		
+	First Valid (+1 NET)  : 192.168.192.1
+	 Last Valid (-1 Broad): 192.168.192.126
+	  Broadcast (-1 NOT)  : 192.168.192.127
+Not			      : 192.168.192.128/25 
+
+Subnets: 1: 192.168.192.0 /25 
+	 2: 192.168.192.128 /25
+	 3: 192.168.193.0 /25 
+	 4: 192.168.193.128 /25 
+	 5: 192.168.194.0 /25 
+
+
+
+___________________________________________________________________________________________
+
+
+Login: root
+Pass: C1sc0123
+
+Get IP:
+rm -rf /etc/udev/rules.d/70-persistent-net.rules
+reboot
+
+Set NetAdapters:
+NetAdapter 1: NAT (208.8.8.0/24)
+NetAdapter 2: VMNet15 (10.255.10.0/24)
+NetAdapter 3: VMNet16 (10.69.255.0/29)
+
+!@cmd
+route add 172.16.29.0 mask 255.255.255.0 10.69.255.6
+
+_________________________________________________________________________
+
+!@C1 - DHCP
+config t
+vlan 25
+ name TASKUS.com
+ exit
+Int vlan 25
+ no shut
+ ip add 192.168.192.1 255.255.255.128
+ip dhcp excluded-add 192.168.192.1 192.168.192.10
+ip dhcp pool TASKUS.com
+ network 192.168.192.0 255.255.255.128
+ default-router 192.168.192.1
+ domain-name TASKUS.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+ end 
+
+!@A1 - Lipat VLAN
+conf t
+ Int e0/0
+  switchport mode access
+  switchport access vlan 25
+  do sh ip dhcp binding
+  no shut
+end
+
+
+
+!@P1
+conf t
+ int e0/0
+ no shut
+ ip add dhcp
+ end 
+bp
+
+
+_________________________________________
+
+!@C1 - DHCP
+config t
+vlan 26
+ name TASKUS2.com
+ exit
+Int vlan 26
+ no shut
+ ip add 192.168.192.129 255.255.255.128
+ip dhcp excluded-add 192.168.192.129 192.168.192.179
+ip dhcp pool TASKUS2.com
+ network 192.168.192.128 255.255.255.128
+ default-router 192.168.192.129
+ domain-name TASKUS2.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+ end 
+
+!@A2 - Lipat VLAN
+conf t
+ Int e1/0
+  switchport mode access
+  switchport access vlan 26
+  do sh ip dhcp binding
+  no shut
+end
+
+
+
+!@P2
+conf t
+ int e1/0
+ no shut
+ ip add dhcp
+ end 
+bp
+
+_____________________________________________________________________
+
+TASK 5: Design a network for BDO.com with 777 pcs. Using the 172.16.64.0/20 address space
+
+Configure C1 as a DHCP server and S1 as a DHCP client for BDO
+ - Reserve 20 IP Addresses
+ - Assign bdo to VLAN 69
+C	 10b
+S	/32 - 10b = /22
+		
+	= 172.16.64.0 /22
+
+I	3rd, 4i
+	- 172.16.68.0
+
+Network:	 		172.16.64.0 /22
+	First Valid (+1 NET)  : 172.16.64.1
+	 Last Valid (-1 Broad): 172.16.67.254
+	  Broadcast (-1 NOT)  : 172.16.67.255
+Not			      : 172.16.68.0 /?
+
+Subnets: 1: 172.16.64.0 /22
+	 2: 172.16.68.0 /22
+	 3: 172.16.72.0 /22
+	 4 172.16.76.0 /22
+
+!@C1 - DHCP
+config t
+vlan 25
+ name TASKUS.com
+ exit
+Int vlan 25
+ no shut
+ ip add 192.168.192.1 255.255.255.128
+ip dhcp excluded-add 192.168.192.1 192.168.192.10
+ip dhcp pool TASKUS.com
+ network 192.168.192.0 255.255.255.128
+ default-router 192.168.192.1
+ domain-name TASKUS.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+ end 
+
+!@A1 - Lipat VLAN
+conf t
+ Int e0/0
+  switchport mode access
+  switchport access vlan 25
+  do sh ip dhcp binding
+  no shut
+end
+
+
+
+!@P1
+conf t
+ int e0/0
+ no shut
+ ip add dhcp
+ end 
+bp
+
+
+_________________________________________
+
+!@S1 - DHCP
+config t
+vlan 26
+ name TASKUS2.com
+ exit
+Int vlan 26
+ no shut
+ ip add 192.168.192.129 255.255.255.128
+ip dhcp excluded-add 192.168.192.129 192.168.192.179
+ip dhcp pool TASKUS2.com
+ network 192.168.192.128 255.255.255.128
+ default-router 192.168.192.129
+ domain-name TASKUS2.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+ end 
+
+!@A2 - Lipat VLAN
+conf t
+ Int e1/0
+  switchport mode access
+  switchport access vlan 26
+  do sh ip dhcp binding
+  no shut
+end
+
+
+
+!@P2
+conf t
+ int e1/0
+ no shut
+ ip add dhcp
+ end 
+bp
+
+
+
+____________________________________________________________
+
+
+VLSM Variable Length Subnet Mask
+

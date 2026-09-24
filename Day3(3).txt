@@ -1,0 +1,98 @@
+TASK 5: Design a network for BDO.com with 777 pcs. Using the 172.16.64.0/20 address space
+
+Configure C1 as a DHCP server and S1 as a DHCP client for BDO
+ - Reserve 20 IP Addresses
+ - Assign bdo to VLAN 69
+C	 10b
+S	/32 - 10b = /22
+		
+	= 172.16.64.0 /22
+
+I	3rd, 4i
+	- 172.16.68.0
+
+Network:	 		172.16.64.0 /22
+	First Valid (+1 NET)  : 172.16.64.1
+	 Last Valid (-1 Broad): 172.16.67.254
+	  Broadcast (-1 NOT)  : 172.16.67.255
+Not			      : 172.16.68.0 /?
+
+Subnets: 1: 172.16.64.0 /22
+	 2: 172.16.68.0 /22
+	 3: 172.16.72.0 /22
+	 4 172.16.76.0 /22
+
+!@C1 - DHCP
+config t
+vlan 25
+ name BDO.com
+ exit
+Int vlan 25
+ no shut
+ ip add 172.16.64.1 255.255.252.0
+ip dhcp excluded-add 172.16.64.1 172.16.64.20
+ip dhcp pool BDO.com
+ network 192.168.192.0 255.255.252.0
+ default-router 172.16.64.1
+ domain-name BDO.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+ end 
+
+!@A1 - Lipat VLAN
+conf t
+ Int e1/0
+  switchport mode access
+  switchport access vlan 25
+  do sh ip dhcp binding
+  no shut
+end
+
+
+
+!@S1
+conf t
+ int e0/0
+ no shut
+ ip add dhcp
+ end 
+bp
+
+
+_________________________________________
+
+!@C1 - DHCP
+config t
+vlan 26
+ name BDO2.com
+ exit
+Int vlan 26
+ no shut
+ ip add 172.16.68.1 255.255.252.0
+ip dhcp excluded-add 172.16.68.1 192.168.192.179
+ip dhcp pool BDO2.com
+ network 192.168.192.128 255.255.255.128
+ default-router 192.168.192.129
+ domain-name BDO2.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+ end 
+
+!@A2 - Lipat VLAN
+conf t
+ Int e1/0
+  switchport mode access
+  switchport access vlan 26
+  do sh ip dhcp binding
+  no shut
+end
+
+
+
+!@P2
+conf t
+ int e1/0
+ no shut
+ ip add dhcp
+ end 
+bp
